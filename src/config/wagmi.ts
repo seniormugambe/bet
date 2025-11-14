@@ -1,17 +1,17 @@
 import { createConfig, http } from 'wagmi';
-import { celo, celoAlfajores } from 'wagmi/chains';
+import { sepolia, mainnet } from 'wagmi/chains';
 import { injected, walletConnect } from 'wagmi/connectors';
 
 // Get environment variables
 const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id';
-const network = import.meta.env.VITE_CELO_NETWORK || 'alfajores';
+const network = import.meta.env.VITE_NETWORK || 'sepolia';
 
 // Determine which chains to use based on environment
 const chains = network === 'mainnet' 
-  ? [celo, celoAlfajores] as const
-  : [celoAlfajores, celo] as const;
+  ? [mainnet, sepolia] as const
+  : [sepolia, mainnet] as const;
 
-// Configure for Celo with MiniPay support
+// Configure for Ethereum with Sepolia testnet
 export const config = createConfig({
   chains,
   connectors: [
@@ -19,49 +19,42 @@ export const config = createConfig({
     walletConnect({ projectId }),
   ],
   transports: {
-    [celo.id]: http(),
-    [celoAlfajores.id]: http(),
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
 });
 
 // Export chain info for easy access
-export const activeChain = network === 'mainnet' ? celo : celoAlfajores;
+export const activeChain = network === 'mainnet' ? mainnet : sepolia;
 export const isMainnet = network === 'mainnet';
-
-// MiniPay detection
-export const isMiniPay = () => {
-  if (typeof window === 'undefined') return false;
-  return window.ethereum?.isMiniPay === true;
-};
 
 // Contract addresses from environment
 export const FACTORY_CONTRACT_ADDRESS = import.meta.env.VITE_FACTORY_CONTRACT_ADDRESS as `0x${string}` | undefined;
-export const ACCESS_CONTROL_CONTRACT_ADDRESS = import.meta.env.VITE_ACCESS_CONTROL_CONTRACT_ADDRESS as `0x${string}` | undefined;
 
-// Celo-specific configuration
-export const CELO_CONFIG = {
+// Network configuration
+export const NETWORK_CONFIG = {
   mainnet: {
-    chainId: 42220,
-    name: 'Celo',
-    rpcUrl: 'https://forno.celo.org',
-    blockExplorer: 'https://celoscan.io',
+    chainId: 1,
+    name: 'Ethereum',
+    rpcUrl: 'https://eth.llamarpc.com',
+    blockExplorer: 'https://etherscan.io',
     nativeCurrency: {
-      name: 'CELO',
-      symbol: 'CELO',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
   },
-  alfajores: {
-    chainId: 44787,
-    name: 'Celo Alfajores Testnet',
-    rpcUrl: 'https://alfajores-forno.celo-testnet.org',
-    blockExplorer: 'https://alfajores.celoscan.io',
+  sepolia: {
+    chainId: 11155111,
+    name: 'Sepolia Testnet',
+    rpcUrl: 'https://rpc.sepolia.org',
+    blockExplorer: 'https://sepolia.etherscan.io',
     nativeCurrency: {
-      name: 'CELO',
-      symbol: 'CELO',
+      name: 'Sepolia Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
   },
 };
 
-export const currentNetwork = CELO_CONFIG[network as keyof typeof CELO_CONFIG] || CELO_CONFIG.alfajores;
+export const currentNetwork = NETWORK_CONFIG[network as keyof typeof NETWORK_CONFIG] || NETWORK_CONFIG.sepolia;
