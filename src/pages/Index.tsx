@@ -34,6 +34,12 @@ const Index = () => {
               <Link to="/betting">
                 <button className="btn-kahoot-success">Explore Events</button>
               </Link>
+              <Link to="/staking">
+                <button className="btn-kahoot-secondary">Stake & Earn</button>
+              </Link>
+              <Link to="/dashboard">
+                <button className="btn-kahoot-warning">My Dashboard</button>
+              </Link>
               <Link to="/create">
                 <button className="btn-kahoot-primary">Create Event</button>
               </Link>
@@ -96,6 +102,14 @@ const Index = () => {
                 </h3>
                 <p className="text-muted-foreground">
                   Binary and multiple outcome betting across all categories
+                </p>
+              </div>
+              <div className="glass-card p-6 rounded-2xl">
+                <h3 className="text-xl font-bold text-secondary mb-2">
+                  🏆 Staking Rewards
+                </h3>
+                <p className="text-muted-foreground">
+                  Stake CELO to earn rewards and unlock tier benefits with fee discounts
                 </p>
               </div>
             </div>

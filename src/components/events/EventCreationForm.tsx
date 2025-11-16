@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { EventType, EventCategory } from '@/types';
+import { EventType, EventCategory, EventStatus } from '@/types';
 import { useBettingStore } from '@/store';
+import { GAME_RULES, GameRuleType } from '@/types/gameRules';
+import { useBettingFactory } from '@/hooks/useBettingFactory';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -24,8 +26,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Trash2, Loader2, Sparkles, CheckCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import ShareEventButton from './ShareEventButton';
 
 const formSchema = z.object({
   eventType: z.enum(['binary', 'multiple']),
@@ -34,13 +39,27 @@ const formSchema = z.object({
   category: z.enum(['Sports', 'Politics', 'Entertainment', 'Crypto', 'Weather', 'Gaming', 'Other']),
   duration: z.number().min(1, 'Duration must be at least 1 hour').max(720, 'Duration cannot exceed 30 days'),
   outcomes: z.array(z.string().min(1, 'Outcome cannot be empty')).min(2).max(10),
+  gameRules: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const EventCreationForm = () => {
-  const [isCreating, setIsCreating] = useState(false);
+  const [createdEvent, setCreatedEvent] = useState<{ address: string; title: string } | null>(null);
+  const [eventAddress, setEventAddress] = useState<string | null>(null);
   const { addEvent, addNotification } = useBettingStore();
+  const navigate = useNavigate();
+  
+  const {
+    createBinaryEvent,
+    createMultipleOutcomeEvent,
+    isPending,
+    isSuccess,
+    transactionHash,
+    isAdmin,
+    factoryAddress,
+    useEventCreatedListener,
+  } = useBettingFactory();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -51,8 +70,68 @@ const EventCreationForm = () => {
       category: 'Sports',
       duration: 24,
       outcomes: ['Yes', 'No'],
+      gameRules: [],
     },
   });
+
+  // Listen for EventCreated events
+  useEventCreatedListener((address, eventType, category, endTime) => {
+    if (transactionHash) {
+      console.log('Event created:', { address, eventType, category, endTime });
+      setEventAddress(address);
+    }
+  });
+
+  // Handle successful event creation
+  useEffect(() => {
+    if (isSuccess && eventAddress && form.getValues('title')) {
+      const values = form.getValues();
+      
+      // Add event to store
+      const newEvent = {
+        address: eventAddress,
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        eventType: values.eventType === 'binary' ? EventType.BINARY : EventType.MULTIPLE,
+        endTime: Math.floor(Date.now() / 1000) + (values.duration * 3600),
+        totalPool: BigInt(0),
+        outcomes: values.outcomes.map((label, index) => ({
+          index,
+          label,
+          totalBets: BigInt(0),
+          bettorCount: 0,
+          odds: 0,
+          poolPercentage: 0,
+        })),
+        status: EventStatus.ACTIVE,
+        concluded: false,
+        participantCount: 0,
+        gameRules: values.gameRules || [],
+      };
+      
+      addEvent(newEvent);
+      
+      addNotification({
+        type: 'success',
+        title: 'Event Created!',
+        message: `Your event "${values.title}" has been created successfully.`,
+      });
+      
+      toast.success('Event created successfully!', {
+        description: `Transaction: ${transactionHash?.slice(0, 10)}...`,
+      });
+      
+      // Show success screen
+      setCreatedEvent({
+        address: eventAddress,
+        title: values.title,
+      });
+      
+      // Reset for next creation
+      setEventAddress(null);
+    }
+  }, [isSuccess, eventAddress, transactionHash, addEvent, addNotification, form]);
 
   const eventType = form.watch('eventType');
   const outcomes = form.watch('outcomes');
@@ -77,61 +156,134 @@ const EventCreationForm = () => {
   };
 
   const onSubmit = async (values: FormValues) => {
-    setIsCreating(true);
+    // Check if factory is configured
+    if (!factoryAddress) {
+      toast.error('Contract not configured', {
+        description: 'Please deploy the BettingFactory contract and set VITE_FACTORY_CONTRACT_ADDRESS in .env',
+      });
+      return;
+    }
+
+    // Check admin status
+    if (!isAdmin) {
+      toast.error('Admin access required', {
+        description: 'Only admins can create betting events. Please contact the platform owner.',
+      });
+      return;
+    }
     
     try {
-      // Simulate contract deployment
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      let success = false;
       
-      // Create mock event
-      const mockEventAddress = `0x${Math.random().toString(16).slice(2, 42)}`;
-      const endTime = Math.floor(Date.now() / 1000) + (values.duration * 3600);
+      // Convert duration from hours to seconds
+      const durationInSeconds = values.duration * 3600;
       
-      const newEvent = {
-        address: mockEventAddress,
-        title: values.title,
-        description: values.description,
-        category: values.category,
-        eventType: values.eventType === 'binary' ? EventType.BINARY : EventType.MULTIPLE,
-        endTime,
-        totalPool: BigInt(0),
-        outcomes: values.outcomes.map((label, index) => ({
-          index,
-          label,
-          totalBets: BigInt(0),
-          bettorCount: 0,
-          odds: 0,
-          poolPercentage: 0,
-        })),
-        status: 'active' as const,
-        concluded: false,
-        participantCount: 0,
-      };
+      if (values.eventType === 'binary') {
+        // Create binary event
+        success = await createBinaryEvent(
+          values.title,
+          values.description,
+          values.category,
+          durationInSeconds,
+          [values.outcomes[0], values.outcomes[1]]
+        ) !== null;
+      } else {
+        // Create multiple outcome event
+        success = await createMultipleOutcomeEvent(
+          values.title,
+          values.description,
+          values.category,
+          durationInSeconds,
+          values.outcomes
+        ) !== null;
+      }
       
-      addEvent(newEvent);
+      if (!success) {
+        // Error already shown by the hook
+        return;
+      }
       
-      addNotification({
-        type: 'success',
-        title: 'Event Created!',
-        message: `Your event "${values.title}" has been created successfully.`,
+      // Transaction submitted successfully
+      toast.info('Transaction submitted', {
+        description: 'Waiting for confirmation...',
       });
-      
-      toast.success('Event created successfully!', {
-        description: 'Your betting event is now live and ready for participants.',
-      });
-      
-      // Reset form
-      form.reset();
       
     } catch (error) {
       console.error('Error creating event:', error);
       toast.error('Failed to create event', {
-        description: 'Please try again or check your wallet connection.',
+        description: error instanceof Error ? error.message : 'Please try again or check your wallet connection.',
       });
-    } finally {
-      setIsCreating(false);
     }
   };
+
+  // Show success screen if event was created
+  if (createdEvent) {
+    return (
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="glass-card p-8 rounded-2xl text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="p-4 bg-success/10 rounded-full">
+              <CheckCircle className="w-16 h-16 text-success" />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-gradient-primary">
+              Event Created Successfully!
+            </h2>
+            <p className="text-xl text-foreground font-semibold">
+              {createdEvent.title}
+            </p>
+            <p className="text-muted-foreground">
+              Your betting event is now live and ready for participants
+            </p>
+          </div>
+
+          <div className="p-4 bg-surface rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground mb-2">Event Address</p>
+            <p className="text-sm font-mono text-foreground break-all">
+              {createdEvent.address}
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => navigate(`/event/${createdEvent.address}`)}
+              className="btn-kahoot-primary gap-2"
+              size="lg"
+            >
+              <ExternalLink className="w-5 h-5" />
+              View Event
+            </Button>
+            
+            <ShareEventButton
+              eventAddress={createdEvent.address}
+              eventTitle={createdEvent.title}
+              variant="outline"
+              size="lg"
+            />
+            
+            <Button
+              onClick={() => {
+                setCreatedEvent(null);
+                form.reset();
+              }}
+              variant="outline"
+              size="lg"
+            >
+              Create Another
+            </Button>
+          </div>
+
+          <div className="pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              💡 Share your event with friends to get more participants!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -285,6 +437,76 @@ const EventCreationForm = () => {
               )}
             />
 
+            {/* Game Rules */}
+            <FormField
+              control={form.control}
+              name="gameRules"
+              render={() => (
+                <FormItem>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-warning/10 rounded-lg">
+                      <Sparkles className="w-5 h-5 text-warning" />
+                    </div>
+                    <div>
+                      <FormLabel className="text-lg font-semibold">
+                        Game Rules (Optional)
+                      </FormLabel>
+                      <FormDescription>
+                        Add special bonuses to make your event more exciting!
+                      </FormDescription>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.values(GameRuleType).map((ruleType) => {
+                      const rule = GAME_RULES[ruleType];
+                      return (
+                        <FormField
+                          key={ruleType}
+                          control={form.control}
+                          name="gameRules"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={ruleType}
+                                className="flex flex-row items-start space-x-3 space-y-0 p-3 bg-surface rounded-lg border border-border hover:border-warning/50 transition-colors"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(ruleType)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...(field.value || []), ruleType])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value) => value !== ruleType
+                                            )
+                                          );
+                                    }}
+                                  />
+                                </FormControl>
+                                <div className="flex-1 space-y-1 leading-none">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xl">{rule.icon}</span>
+                                    <FormLabel className="font-semibold cursor-pointer">
+                                      {rule.name.replace(/^[^\s]+\s/, '')}
+                                    </FormLabel>
+                                  </div>
+                                  <FormDescription className="text-xs">
+                                    {rule.description}
+                                  </FormDescription>
+                                </div>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Outcomes */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -341,18 +563,36 @@ const EventCreationForm = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isCreating}
+              disabled={isPending || !factoryAddress}
               className="w-full btn-kahoot-primary text-xl py-6"
             >
-              {isCreating ? (
+              {isPending ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Creating Event...
+                  {isSuccess ? 'Confirming...' : 'Creating Event...'}
                 </>
+              ) : !factoryAddress ? (
+                'Contract Not Configured'
+              ) : !isAdmin ? (
+                'Admin Access Required'
               ) : (
                 'Create Event'
               )}
             </Button>
+            
+            {/* Contract Info */}
+            {factoryAddress && (
+              <div className="text-center space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Factory Contract: {factoryAddress.slice(0, 6)}...{factoryAddress.slice(-4)}
+                </p>
+                {isAdmin ? (
+                  <p className="text-xs text-success">✓ Admin Access Granted</p>
+                ) : (
+                  <p className="text-xs text-warning">⚠ Admin Access Required</p>
+                )}
+              </div>
+            )}
           </form>
         </Form>
       </div>

@@ -43,6 +43,7 @@ export interface BettingEvent {
   concluded: boolean;
   winningOutcome?: number;
   participantCount: number;
+  gameRules?: string[]; // Array of GameRuleType IDs
 }
 
 // Bet Types
@@ -149,4 +150,39 @@ export interface Notification {
   message: string;
   timestamp: number;
   read: boolean;
+}
+
+// Staking Types
+export enum StakeTier {
+  NONE = 0,
+  BRONZE = 1,
+  SILVER = 2,
+  GOLD = 3,
+  PLATINUM = 4
+}
+
+export interface StakeInfo {
+  amount: bigint;
+  stakedAt: number;
+  lastRewardClaim: number;
+  tier: StakeTier;
+  totalRewardsClaimed: bigint;
+  pendingRewards: bigint;
+}
+
+export interface TierBenefits {
+  tier: StakeTier;
+  name: string;
+  threshold: bigint;
+  feeDiscount: number; // Percentage
+  rewardBoost: number; // Percentage
+  color: string;
+  icon: string;
+}
+
+export interface StakingStats {
+  totalStaked: bigint;
+  stakerCount: number;
+  rewardRate: number;
+  poolBalance: bigint;
 }

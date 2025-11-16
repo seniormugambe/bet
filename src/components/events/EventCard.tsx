@@ -3,6 +3,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { Clock, Users, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatEther } from 'viem';
+import GameRulesBadges from './GameRulesBadges';
+import ShareEventButton from './ShareEventButton';
 
 interface EventCardProps {
   event: BettingEvent;
@@ -53,8 +55,19 @@ const EventCard = ({ event }: EventCardProps) => {
       onClick={handleClick}
       className="group relative bg-card rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-2 border-transparent hover:border-primary animate-fade-in"
     >
-      {/* Status Badge */}
-      <div className="absolute top-4 right-4">
+      {/* Status Badge and Share Button */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <ShareEventButton
+            eventAddress={event.address}
+            eventTitle={event.title}
+            variant="ghost"
+            size="icon"
+          />
+        </div>
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(event.status)}`}>
           {getStatusLabel(event.status)}
         </span>
@@ -102,6 +115,14 @@ const EventCard = ({ event }: EventCardProps) => {
           <span className="text-sm font-bold text-foreground mt-1">{event.participantCount}</span>
         </div>
       </div>
+
+      {/* Game Rules */}
+      {event.gameRules && event.gameRules.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-semibold">Special Bonuses:</p>
+          <GameRulesBadges ruleIds={event.gameRules} maxDisplay={2} size="sm" />
+        </div>
+      )}
 
       {/* Outcomes Preview */}
       <div className="space-y-2">

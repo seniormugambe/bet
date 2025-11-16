@@ -10,6 +10,8 @@ import {
   UserProfile,
   Badge,
   UserLevel,
+  StakeInfo,
+  StakingStats,
 } from '@/types';
 
 interface BettingStore {
@@ -22,6 +24,10 @@ interface BettingStore {
   
   // User Profile State
   userProfile: UserProfile | null;
+  
+  // Staking State
+  userStake: StakeInfo | null;
+  stakingStats: StakingStats | null;
   
   // UI State
   ui: UIState;
@@ -45,6 +51,10 @@ interface BettingStore {
   updateUserStats: (stats: Partial<UserStats>) => void;
   unlockBadge: (badgeId: string) => void;
   
+  // Staking Actions
+  setUserStake: (stake: StakeInfo | null) => void;
+  setStakingStats: (stats: StakingStats) => void;
+  
   // UI Actions
   setSelectedCategory: (category: EventCategory | 'All') => void;
   setSoundEnabled: (enabled: boolean) => void;
@@ -62,6 +72,7 @@ interface BettingStore {
   getActiveBets: () => UserBet[];
   getCompletedBets: () => UserBet[];
   getUserStats: () => UserStats;
+  getUserParticipatedEvents: () => BettingEvent[];
 }
 
 export const useBettingStore = create<BettingStore>()(
@@ -72,6 +83,8 @@ export const useBettingStore = create<BettingStore>()(
       selectedEvent: null,
       userBets: [],
       userProfile: null,
+      userStake: null,
+      stakingStats: null,
       ui: {
         isSoundEnabled: false,
         selectedCategory: 'All',
@@ -138,6 +151,11 @@ export const useBettingStore = create<BettingStore>()(
               }
             : null,
         })),
+
+      // Staking Actions
+      setUserStake: (stake) => set({ userStake: stake }),
+      
+      setStakingStats: (stats) => set({ stakingStats: stats }),
 
       // UI Actions
       setSelectedCategory: (category) =>
@@ -224,6 +242,12 @@ export const useBettingStore = create<BettingStore>()(
           };
         }
         return userProfile.stats;
+      },
+      
+      getUserParticipatedEvents: () => {
+        const { events, userBets } = get();
+        const eventAddresses = new Set(userBets.map(bet => bet.eventAddress));
+        return events.filter(event => eventAddresses.has(event.address));
       },
     }),
     {

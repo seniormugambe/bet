@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useBettingStore } from '@/store';
 import { BettingEvent, EventType, EventStatus } from '@/types';
+import { GameRuleType } from '@/types/gameRules';
 
 // Mock events for testing
 const mockEvents: BettingEvent[] = [
@@ -33,6 +34,7 @@ const mockEvents: BettingEvent[] = [
     status: EventStatus.ACTIVE,
     concluded: false,
     participantCount: 25,
+    gameRules: [GameRuleType.EARLY_BIRD, GameRuleType.JACKPOT],
   },
   {
     address: '0x2345678901234567890123456789012345678901',
@@ -79,6 +81,7 @@ const mockEvents: BettingEvent[] = [
     status: EventStatus.CLOSING_SOON,
     concluded: false,
     participantCount: 50,
+    gameRules: [GameRuleType.MULTIPLIER, GameRuleType.UNDERDOG_BOOST, GameRuleType.BONUS_ROUND],
   },
   {
     address: '0x3456789012345678901234567890123456789012',
@@ -109,6 +112,7 @@ const mockEvents: BettingEvent[] = [
     status: EventStatus.ACTIVE,
     concluded: false,
     participantCount: 20,
+    gameRules: [GameRuleType.DOUBLE_OR_NOTHING],
   },
   {
     address: '0x4567890123456789012345678901234567890123',
@@ -147,6 +151,7 @@ const mockEvents: BettingEvent[] = [
     status: EventStatus.ACTIVE,
     concluded: false,
     participantCount: 75,
+    gameRules: [GameRuleType.STREAK_BONUS],
   },
   {
     address: '0x5678901234567890123456789012345678901234',
@@ -177,6 +182,7 @@ const mockEvents: BettingEvent[] = [
     status: EventStatus.ACTIVE,
     concluded: false,
     participantCount: 60,
+    gameRules: [GameRuleType.MYSTERY_BOX, GameRuleType.EARLY_BIRD],
   },
 ];
 
