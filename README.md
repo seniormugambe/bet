@@ -156,6 +156,24 @@ npm run build
 npm run preview
 ```
 
+### Deploy to Render
+
+```bash
+# Push to GitHub
+git push origin main
+
+# Follow Render deployment guide
+# See RENDER_DEPLOYMENT.md for details
+```
+
+**Quick Deploy:**
+1. Go to https://render.com
+2. Connect GitHub repository
+3. Add environment variables
+4. Deploy!
+
+See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete guide.
+
 ---
 
 ## 📚 Documentation

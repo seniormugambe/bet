@@ -12,11 +12,15 @@ export default {
     },
   },
   networks: {
-    sepolia: {
-      type: "http",
-      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 11155111,
+      chainId: 44787,
+    },
+    celo: {
+      url: "https://forno.celo.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 42220,
     },
   },
   paths: {

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: betcelo-frontend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_VERSION
+        value: 18.18.0
+      - key: VITE_CELO_NETWORK
+        value: alfajores
+      - key: VITE_FACTORY_CONTRACT_ADDRESS
+        sync: false
+      - key: VITE_STAKING_POOL_ADDRESS
+        sync: false
+      - key: VITE_WALLETCONNECT_PROJECT_ID
+        sync: false
+      - key: VITE_ENABLE_SOUNDS
+        value: false
+    healthCheckPath: /
+    autoDeploy: true

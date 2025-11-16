@@ -1,0 +1,55 @@
+# Render ignore file - exclude from deployment
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+
+# Documentation (optional - remove if you want docs deployed)
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+test/
+tests/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Hardhat (not needed for frontend)
+cache/
+artifacts/
+contracts/
+scripts/deploy*.ts
+scripts/verify.ts
+hardhat.config.*
+.openzeppelin/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
