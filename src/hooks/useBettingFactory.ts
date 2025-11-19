@@ -37,7 +37,8 @@ export const useBettingFactory = () => {
     description: string,
     category: string,
     duration: number,
-    outcomes: [string, string]
+    outcomes: [string, string],
+    stake: number = 0
   ) => {
     if (!FACTORY_ADDRESS) {
       toast.error('Factory contract not configured', {
@@ -59,12 +60,21 @@ export const useBettingFactory = () => {
     }
 
     try {
+      const stakeWei = stake > 0 ? BigInt(Math.floor(stake * 1e18)) : BigInt(0);
+      
       writeContract({
         address: FACTORY_ADDRESS,
         abi: BettingFactoryABI,
         functionName: 'createBinaryEvent',
         args: [title, description, category, BigInt(duration), outcomes],
+        value: stakeWei,
       } as any);
+
+      if (stake > 0) {
+        toast.info(`Creating event with ${stake} CELO stake`, {
+          description: 'Transaction submitted...',
+        });
+      }
 
       return true;
     } catch (error) {
@@ -82,7 +92,8 @@ export const useBettingFactory = () => {
     description: string,
     category: string,
     duration: number,
-    outcomes: string[]
+    outcomes: string[],
+    stake: number = 0
   ) => {
     if (!FACTORY_ADDRESS) {
       toast.error('Factory contract not configured', {
@@ -111,12 +122,21 @@ export const useBettingFactory = () => {
     }
 
     try {
+      const stakeWei = stake > 0 ? BigInt(Math.floor(stake * 1e18)) : BigInt(0);
+      
       writeContract({
         address: FACTORY_ADDRESS,
         abi: BettingFactoryABI,
         functionName: 'createMultipleOutcomeEvent',
         args: [title, description, category, BigInt(duration), outcomes],
+        value: stakeWei,
       } as any);
+
+      if (stake > 0) {
+        toast.info(`Creating event with ${stake} CELO stake`, {
+          description: 'Transaction submitted...',
+        });
+      }
 
       return true;
     } catch (error) {

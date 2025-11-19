@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi';
-import { ConnectWallet } from '@/components/wallet/ConnectWallet';
+import { SmartWalletButton } from '@/components/wallet/SmartWalletButton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ const Dashboard = () => {
             Back
           </Button>
           <h1 className="text-2xl font-bold text-gradient-primary">My Dashboard</h1>
-          <ConnectWallet />
+          <SmartWalletButton />
         </div>
       </header>
 
@@ -41,7 +41,7 @@ const Dashboard = () => {
                 Connect your wallet to view your betting dashboard
               </p>
             </div>
-            <ConnectWallet />
+            <SmartWalletButton />
           </div>
         ) : (
           <div className="max-w-6xl mx-auto space-y-6">

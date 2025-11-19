@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import EventCreationForm from '@/components/events/EventCreationForm';
-import { ConnectWallet } from '@/components/wallet/ConnectWallet';
+import { SmartWalletButton } from '@/components/wallet/SmartWalletButton';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,7 +22,7 @@ const CreateEvent = () => {
             <ArrowLeft className="w-5 h-5" />
             Back
           </Button>
-          <ConnectWallet />
+          <SmartWalletButton />
         </div>
       </header>
 
@@ -38,7 +38,7 @@ const CreateEvent = () => {
                 You need to connect your wallet to create betting events
               </p>
             </div>
-            <ConnectWallet />
+            <SmartWalletButton />
           </div>
         ) : (
           <EventCreationForm />

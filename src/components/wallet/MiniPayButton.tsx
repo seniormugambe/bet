@@ -38,9 +38,15 @@ export function MiniPayButton() {
   }, [address, isConnected]);
 
   const handleConnect = () => {
+    // Use the first available connector (injected wallet)
+    // This will automatically use MiniPay if it's the injected provider
     const connector = connectors[0];
+    
     if (connector) {
+      console.log('🔌 Connecting with connector:', connector.name);
       connect({ connector });
+    } else {
+      console.error('❌ No connectors available');
     }
   };
 

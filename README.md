@@ -58,6 +58,12 @@ A gamified, decentralized betting platform built on the Celo blockchain with rea
 - **Verifiable** - All transactions on Celoscan
 - **Admin Controls** - Multi-sig admin for event management
 
+### 📱 MiniPay Support
+- **Mobile-First** - Optimized for Celo MiniPay wallet
+- **Auto-Detection** - Automatically detects MiniPay browser
+- **Seamless UX** - One-click connection on mobile
+- **Native Celo** - Built for the Celo ecosystem
+
 ---
 
 ## 🎬 Demo
@@ -98,7 +104,7 @@ A gamified, decentralized betting platform built on the Celo blockchain with rea
 
 - Node.js 18+ (v20+ recommended)
 - npm or pnpm
-- MetaMask or compatible Web3 wallet
+- MetaMask, MiniPay, or compatible Web3 wallet
 - Celo Alfajores testnet CELO (from [faucet](https://faucet.celo.org/alfajores))
 
 ### Installation
@@ -182,6 +188,7 @@ See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete guide.
 - [Getting Started](docs/getting-started.md)
 - [How to Bet](docs/how-to-bet.md)
 - [Staking Guide](STAKING.md)
+- [MiniPay Integration](MINIPAY_INTEGRATION.md)
 - [FAQ](docs/faq.md)
 
 ### Developer Guides

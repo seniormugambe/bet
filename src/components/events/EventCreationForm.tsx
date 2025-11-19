@@ -38,6 +38,7 @@ const formSchema = z.object({
   description: z.string().min(20, 'Description must be at least 20 characters').max(500),
   category: z.enum(['Sports', 'Politics', 'Entertainment', 'Crypto', 'Weather', 'Gaming', 'Other']),
   duration: z.number().min(1, 'Duration must be at least 1 hour').max(720, 'Duration cannot exceed 30 days'),
+  stake: z.number().min(0, 'Stake must be 0 or greater').max(1000, 'Stake cannot exceed 1000 CELO'),
   outcomes: z.array(z.string().min(1, 'Outcome cannot be empty')).min(2).max(10),
   gameRules: z.array(z.string()).optional(),
 });
@@ -69,6 +70,7 @@ const EventCreationForm = () => {
       description: '',
       category: 'Sports',
       duration: 24,
+      stake: 0,
       outcomes: ['Yes', 'No'],
       gameRules: [],
     },
@@ -185,7 +187,8 @@ const EventCreationForm = () => {
           values.description,
           values.category,
           durationInSeconds,
-          [values.outcomes[0], values.outcomes[1]]
+          [values.outcomes[0], values.outcomes[1]],
+          values.stake
         ) !== null;
       } else {
         // Create multiple outcome event
@@ -194,7 +197,8 @@ const EventCreationForm = () => {
           values.description,
           values.category,
           durationInSeconds,
-          values.outcomes
+          values.outcomes,
+          values.stake
         ) !== null;
       }
       
@@ -432,6 +436,92 @@ const EventCreationForm = () => {
                   <FormDescription>
                     How long until betting closes (1-720 hours / 30 days max)
                   </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Stake */}
+            <FormField
+              control={form.control}
+              name="stake"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-success/10 rounded-lg">
+                      <span className="text-xl">💰</span>
+                    </div>
+                    <div>
+                      <FormLabel className="text-lg font-semibold">Creator Stake (CELO)</FormLabel>
+                      <FormDescription className="mt-1">
+                        Optional stake to show commitment and build trust with participants
+                      </FormDescription>
+                    </div>
+                  </div>
+                  <FormControl>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={1000}
+                          step={0.01}
+                          placeholder="0.00"
+                          className="text-lg pr-16"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                          CELO
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => field.onChange(0)}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            field.value === 0 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-surface hover:bg-surface-elevated border border-border'
+                          }`}
+                        >
+                          No Stake
+                        </button>
+                        {[0.1, 0.5, 1, 5, 10].map((amount) => (
+                          <button
+                            key={amount}
+                            type="button"
+                            onClick={() => field.onChange(amount)}
+                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                              field.value === amount 
+                                ? 'bg-success text-success-foreground' 
+                                : 'bg-surface hover:bg-surface-elevated border border-border'
+                            }`}
+                          >
+                            {amount} CELO
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </FormControl>
+                  <div className="space-y-2 mt-2">
+                    <FormDescription>
+                      • Stake shows your confidence in the event outcome
+                    </FormDescription>
+                    <FormDescription>
+                      • Higher stakes may attract more participants
+                    </FormDescription>
+                    <FormDescription>
+                      • Stake is returned when event concludes properly
+                    </FormDescription>
+                    {field.value > 0 && (
+                      <div className="p-3 bg-success/10 rounded-lg border border-success/20">
+                        <p className="text-sm text-success font-medium">
+                          ✓ You will stake {field.value} CELO with this event
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

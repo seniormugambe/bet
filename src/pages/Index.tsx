@@ -1,4 +1,4 @@
-import { ConnectWallet } from "@/components/wallet/ConnectWallet";
+import { SmartWalletButton } from "@/components/wallet/SmartWalletButton";
 import { Link } from "react-router-dom";
 import { TrendingUp, Users, Zap } from "lucide-react";
 
@@ -14,7 +14,7 @@ const Index = () => {
               BetCelo
             </span>
           </div>
-          <ConnectWallet />
+          <SmartWalletButton />
         </div>
       </header>
 
@@ -30,7 +30,7 @@ const Index = () => {
               experience
             </p>
             <div className="flex flex-wrap gap-4 justify-center animate-scale-in">
-              <ConnectWallet />
+              <SmartWalletButton />
               <Link to="/betting">
                 <button className="btn-kahoot-success">Explore Events</button>
               </Link>

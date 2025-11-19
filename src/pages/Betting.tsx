@@ -3,7 +3,7 @@ import EventGrid from '@/components/events/EventGrid';
 import { useMockEvents } from '@/hooks/useMockEvents';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { ConnectWallet } from '@/components/wallet/ConnectWallet';
+import { SmartWalletButton } from '@/components/wallet/SmartWalletButton';
 
 const Betting = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Betting = () => {
               <Plus className="w-5 h-5" />
               Create Event
             </Button>
-            <ConnectWallet />
+            <SmartWalletButton />
           </div>
         </div>
       </header>

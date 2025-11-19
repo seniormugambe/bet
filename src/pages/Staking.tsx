@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ConnectWallet } from '@/components/wallet/ConnectWallet';
+import { SmartWalletButton } from '@/components/wallet/SmartWalletButton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import StakingDashboard from '@/components/staking/StakingDashboard';
@@ -21,7 +21,7 @@ const Staking = () => {
             Back
           </Button>
           <h1 className="text-2xl font-bold text-gradient-primary">Staking</h1>
-          <ConnectWallet />
+          <SmartWalletButton />
         </div>
       </header>
 

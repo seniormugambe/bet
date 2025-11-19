@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { useBettingStore } from '@/store';
-import { ConnectWallet } from '@/components/wallet/ConnectWallet';
+import { SmartWalletButton } from '@/components/wallet/SmartWalletButton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, Users, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -61,7 +61,7 @@ const EventDetail = () => {
             <ArrowLeft className="w-5 h-5" />
             Back
           </Button>
-          <ConnectWallet />
+          <SmartWalletButton />
         </div>
       </header>
 
@@ -149,7 +149,7 @@ const EventDetail = () => {
             {!isConnected ? (
               <div className="text-center py-8 space-y-4">
                 <p className="text-muted-foreground">Connect your wallet to place a bet</p>
-                <ConnectWallet />
+                <SmartWalletButton />
               </div>
             ) : !isActive ? (
               <div className="text-center py-8">
